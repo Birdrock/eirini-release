@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: eirini
-  namespace: cf-system
+  namespace: eirini-core
 spec:
   selector:
     matchLabels:
@@ -35,7 +35,7 @@ spec:
             #       path: cc.ca
 # remove for CAPI without TLS ->>
             - secret:
-                name: eirini-internal-tls-certs-ver-1
+                name: eirini-tls
                 items:
                 - key: tls.crt
                   path: eirini-server.crt

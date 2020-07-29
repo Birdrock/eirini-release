@@ -3,7 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: eirini
-  namespace: cf-system
+  namespace: eirini-core
 data:
   opi.yml: |
     opi:
@@ -13,7 +13,7 @@ data:
       # TODO: test with kubecf
       registry_address: REGISTRY.DOMAIN:PORT
       registry_secret_name: registry-credentials
-      eirini_address: https://eirini.cf-system.svc.cluster.local:8085
+      eirini_address: https://eirini.eirini-core.svc.cluster.local:8085
 
       downloader_image: eirini/recipe-downloader@sha256:96eea8a7c7cb53b54678d7f26ab0c1897b1b699297c4b75d64a93b4833048554
       executor_image: eirini/recipe-executor@sha256:c073e375d891259d91dd63148ac8e880098d9f298304954318818a197d1163b3
