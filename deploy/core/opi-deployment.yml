@@ -19,7 +19,7 @@ spec:
       volumes:
         - name: config-map-volume
           configMap:
-            name: eirini
+            name: opi
         - name: cf-secrets
           projected:
             sources:
