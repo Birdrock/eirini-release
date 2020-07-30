@@ -19,8 +19,8 @@
 
   This secret should be named: eirini-tls and it should be created in the namespace you created on the previous step (`eirini-core`).
 
-  TODO: How do they generate these? Do we need a helper script for that?
+  You can use the `deploy/helpers/generate_eirini_tls.sh` script to generate a self signed cert to get you going.
 
 - Now you can create the Eirini ojbects by running the following command from the root directory of this repository:
 
-  ```kubectl apply -f deploy/```
+  ```cat deploy/**/*.yml | kubectl apply -f -```
