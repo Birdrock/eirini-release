@@ -1,0 +1,55 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "eirini-events"
+  namespace: eirini-core
+spec:
+  selector:
+    matchLabels:
+      name: "eirini-events"
+  template:
+    metadata:
+      labels:
+        name: "eirini-events"
+    spec:
+      dnsPolicy: "ClusterFirst"
+      serviceAccountName: "eirini-events"
+      volumes:
+        - name: config-map-volume
+          configMap:
+            name: "events"
+            items:
+            - key: events.yml
+              path: events.yml
+# <<- remove for CAPI without TLS
+        # - name: cf-secrets
+        #   projected:
+        #     sources:
+        #     - secret:
+        #         name: capi-tls
+        #         items:
+        #         - key: cc.crt
+        #           path: cc.crt
+        #         - key: cc.key
+        #           path: cc.key
+        #         - key: cc.ca
+        #           path: cc.ca
+# remove for CAPI without TLS ->>
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: event-reporter
+        image: eirini/event-reporter@sha256:4bf075136c6a9037e1666f18cdea9f18e0de08435fbb3d782ffc9b6b92f7f199
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-map-volume
+          mountPath: /etc/eirini/config
+# <<- remove for CAPI without TLS
+        # - name: cf-secrets
+        #   mountPath: /etc/eirini/secrets
+# remove for CAPI without TLS ->>
+        resources:
+          requests:
+            cpu: 15m
+            memory: 15Mi

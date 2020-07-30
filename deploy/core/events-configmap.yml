@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "events"
+  namespace: eirini-core
+data:
+  events.yml: |
+    app_namespace: eirini-workloads
+    cc_internal_api: "https://capi.eirini-core.svc.cluster.local:9023"
+    cc_tls_disabled: true
+    # if cc tls communication is enabled uncomment lines below
+    # cc_cert_path: "/etc/eirini/secrets/cc.crt"
+    # cc_key_path: "/etc/eirini/secrets/cc.key"
+    # cc_ca_path: "/etc/eirini/secrets/cc.ca"

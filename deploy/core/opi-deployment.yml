@@ -25,7 +25,7 @@ spec:
             sources:
 # <<- remove for CAPI without TLS
             # - secret:
-            #     name: capi
+            #     name: capi-tls
             #     items:
             #     - key: cc.crt
             #       path: cc.crt

@@ -3,6 +3,7 @@
 echo "Will now generate tls.ca tls.crt and tls.key files"
 
 mkdir -p keys
+trap 'rm -rf keys' EXIT
 
 pushd keys
 
