@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 check_app_exists() {
   echo "Checking if app exists..."
   for i in $(seq 60); do
@@ -11,7 +9,7 @@ check_app_exists() {
       echo "+-------------------------------"
       echo "| SUCCESS"
       echo "+-------------------------------"
-      exit 0
+      return
     fi
   done
 
@@ -21,9 +19,13 @@ check_app_exists() {
   exit 1
 }
 
-test_api() {
-  trap 'kubectl -n eirini-workloads delete statefulsets --all' RETURN
+cleanup() {
+  kubectl -n eirini-workloads delete lrps --all
+  kubectl -n eirini-workloads delete statefulsets --all
+  gcloud compute firewall-rules delete --quiet test-node-port
+}
 
+test_api() {
   tls_crt="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.crt"]' | base64 -d)"
   tls_key="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.key"]' | base64 -d)"
   tls_ca="$(kubectl get secret -n eirini-core eirini-tls -o json | jq -r '.data["tls.ca"]' | base64 -d)"
@@ -37,8 +39,6 @@ test_api() {
 }
 
 test_crd() {
-  trap 'kubectl -n eirini-workloads delete lrps --all' RETURN
-
   echo "Creating an app via CRD"
   cat <<EOF | kubectl apply -f -
 apiVersion: eirini.cloudfoundry.org/v1
@@ -49,6 +49,7 @@ metadata:
 spec:
   GUID: "the-app-guid"
   version: "version-1"
+  instances: 1
   lastUpdated: "never"
   ports:
   - 8080
@@ -62,9 +63,11 @@ echo "Cleaning up..."
 kubectl -n eirini-workloads delete statefulsets --all
 kubectl -n eirini-workloads delete lrps --all
 
+cluster_name=$(kubectl config current-context | cut -d _ -f 4)
+echo "Using cluster '$cluster_name'"
 echo "Allowing nodeport 30085..."
-gcloud compute firewall-rules create test-node-port --quiet --network lisbon --allow tcp:30085
-trap 'gcloud compute firewall-rules delete --quiet test-node-port' EXIT
+gcloud compute firewall-rules create test-node-port --quiet --network "$cluster_name" --allow tcp:30085
+trap cleanup EXIT
 
-# test_api
+test_api
 test_crd
