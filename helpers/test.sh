@@ -1,19 +1,24 @@
 #!/bin/bash
 
+set -x
+
 check_app_exists() {
-  sleep 1
-
   echo "Checking if app exists..."
-  if [ $(kubectl -n eirini-workloads get pods | grep the-app-guid | wc -l) -lt 1 ]; then
-    echo "+-------------------------------"
-    echo "| FAILED"
-    echo "+-------------------------------"
-    exit 1
-  fi
+  for i in $(seq 60); do
+    echo "Attempt #$i"
+    sleep 1
+    if [ $(kubectl -n eirini-workloads get pods | grep Running | grep the-app-guid | wc -l) -eq 1 ]; then
+      echo "+-------------------------------"
+      echo "| SUCCESS"
+      echo "+-------------------------------"
+      exit 0
+    fi
+  done
 
   echo "+-------------------------------"
-  echo "| SUCCESS"
+  echo "| FAILED"
   echo "+-------------------------------"
+  exit 1
 }
 
 test_api() {
@@ -32,30 +37,22 @@ test_api() {
 }
 
 test_crd() {
+  trap 'kubectl -n eirini-workloads delete lrps --all' RETURN
+
   echo "Creating an app via CRD"
-  kubectl apply -f <<-EOF
+  cat <<EOF | kubectl apply -f -
 apiVersion: eirini.cloudfoundry.org/v1
 kind: LRP
 metadata:
   name: testapp
   namespace: eirini-workloads
 spec:
-  guid: "the-app-guid"
+  GUID: "the-app-guid"
   version: "version-1"
-  processGUID: "30061986"
-  appGUID: "the-app-guid"
-  appName: "amazing"
-  spaceName: "titan"
-  orgName: "saturn"
-  environment:
-    FOO: "BAR"
-  instances: 1
   lastUpdated: "never"
   ports:
   - 8080
-  lifecycle:
-    docker:
-      image: "eirini/dorini"
+  image: "eirini/dorini"
 EOF
 
   check_app_exists
@@ -63,10 +60,11 @@ EOF
 
 echo "Cleaning up..."
 kubectl -n eirini-workloads delete statefulsets --all
+kubectl -n eirini-workloads delete lrps --all
 
 echo "Allowing nodeport 30085..."
 gcloud compute firewall-rules create test-node-port --quiet --network lisbon --allow tcp:30085
 trap 'gcloud compute firewall-rules delete --quiet test-node-port' EXIT
 
-test_api
+# test_api
 test_crd

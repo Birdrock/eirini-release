@@ -23,7 +23,7 @@ spec:
         - name: cf-secrets
           projected:
             sources:
-# <<- remove for CAPI without TLS
+            # uncomment for cloud controller with tls
             # - secret:
             #     name: capi-tls
             #     items:
@@ -33,7 +33,6 @@ spec:
             #       path: cc.key
             #     - key: cc.ca
             #       path: cc.ca
-# remove for CAPI without TLS ->>
             - secret:
                 name: eirini-tls
                 items:
