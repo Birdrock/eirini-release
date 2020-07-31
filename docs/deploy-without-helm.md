@@ -1,5 +1,7 @@
 # Deploy without Helm
 
+** Disclaimer ** The tool agnostic deployment of Eirini is still work in progress. Please stay tuned.
+
 ## Prerequisites
 
 - Create two namespaces. `eirini-core` will be used to run Eirini and `eirini-workloads` will be used by Eirini to run apps:
@@ -13,7 +15,7 @@ kubectl create namespace eirini-workloads
   - tls.crt
   - tls.key
   - tls.ca
-  This secret should be be created in the `eirini-core` namespace. You can use the `helpers/generate_eirini_tls.sh` script to generate a self signed cert to get you going.
+  This secret should be be created in the `eirini-core` namespace. You can use the `deploy/scripts/generate_eirini_tls.sh` script to generate a self signed cert to get you going.
 
 ## Deployment
 
@@ -49,29 +51,20 @@ After you do that a pod will appear in the `eirini-workloads` namespace.
 Eirini defines custom resopurces for tasks and LRPs. Here is how to create an LRP resource:
 
 ```bash
-kubectl apply -f <<-EOF
+cat <<EOF | kubectl apply -f -
 apiVersion: eirini.cloudfoundry.org/v1
 kind: LRP
 metadata:
   name: testapp
   namespace: eirini-workloads
 spec:
-  guid: "the-app-guid"
+  GUID: "the-app-guid"
   version: "version-1"
-  processGUID: "30061986"
-  appGUID: "the-app-guid"
-  appName: "amazing"
-  spaceName: "titan"
-  orgName: "saturn"
-  environment:
-    FOO: "BAR"
   instances: 1
   lastUpdated: "never"
   ports:
   - 8080
-  lifecycle:
-    docker:
-      image: "eirini/dorini"
+  image: "eirini/dorini"
 EOF
 ```
 

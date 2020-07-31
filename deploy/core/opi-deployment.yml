@@ -24,6 +24,7 @@ spec:
           projected:
             sources:
             # uncomment for cloud controller with tls
+            #
             # - secret:
             #     name: capi-tls
             #     items:
